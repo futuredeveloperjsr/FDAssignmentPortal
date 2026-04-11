@@ -13,9 +13,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const ADMIN_PASSWORD = "Tera_Secret_Password"; 
-const JWT_SECRET = "Abhishek_Ka_Secret_Key";
-
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('Connected to MongoDB'))
     .catch((err) => console.error(err));

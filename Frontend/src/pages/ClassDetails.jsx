@@ -13,7 +13,7 @@ function ClassDetails() {
     const fetchHomework = async () => {
       try {
         // UPDATED: Naya Subject-wise route use kiya
-        const res = await axios.get(`http://localhost:5000/api/homework/${className}/${subjectName}`);
+        const res = await axios.get(`https://fdassignmentportal.onrender.com/api/homework/${className}/${subjectName}`);
         setHomeworks(res.data);
       } catch (err) {
         console.error("Error fetching data", err);

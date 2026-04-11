@@ -10,7 +10,7 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('http://localhost:5000/api/admin/login', { password });
+            const res = await axios.post('https://fdassignmentportal.onrender.com/api/admin/login', { password });
             if (res.data.token) {
                 localStorage.setItem('adminToken', res.data.token);
                 window.location.href = '/admin';

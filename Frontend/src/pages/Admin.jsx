@@ -19,7 +19,7 @@ function Admin() {
     // Saare Assignments load karne ka function
     const fetchAll = async () => {
         try {
-            const res = await axios.get('http://localhost:5000/api/homework-all');
+            const res = await axios.get('https://fdassignmentportal.onrender.com/api/homework-all');
             setAllHomework(res.data);
         } catch (err) {
             console.error("Fetch error:", err);
@@ -43,7 +43,7 @@ function Admin() {
         data.append('subject', formData.subject);
 
         try {
-            await axios.post('http://localhost:5000/api/homework/upload', data);
+            await axios.post('https://fdassignmentportal.onrender.com/api/homework/upload', data);
             setMessage("Homework uploaded successfully! 🎉");
             setFormData({ title: '', description: '', targetClass: 'Class 10', subject: 'Math' });
             setFile(null);
@@ -59,7 +59,7 @@ function Admin() {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/homework/${id}`);
+            await axios.delete(`https://fdassignmentportal.onrender.com/api/homework/${id}`);
             setAllHomework(allHomework.filter(hw => hw._id !== id));
             alert("Deleted successfully!");
         } catch (err) {
