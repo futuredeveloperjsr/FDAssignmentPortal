@@ -66,25 +66,25 @@ app.post('/api/homework/upload', upload.single('pdfFile'), async (req, res) => {
 
 app.delete('/api/homework/:id', async (req, res) => {
     try {
-
         const homework = await Homework.findById(req.params.id);
         
         if (!homework) {
             return res.status(404).json({ message: "Homework not found" });
         }
 
-        if (homework.public_id) {
-            await cloudinary.uploader.destroy(homework.public_id);
-        } else if (homework.fileUrl) {
-            const publicId = homework.fileUrl.split('/').pop().split('.')[0];
-            await cloudinary.uploader.destroy(`Assignments/${publicId}`); 
+        if (homework.fileUrl) {
+            const parts = homework.fileUrl.split('/');
+            const fileNameWithExtension = parts[parts.length - 1];
+            const publicIdWithoutExtension = fileNameWithExtension.split('.')[0];
+            const fullPublicId = `Assignments/${publicIdWithoutExtension}`; 
+
+            await cloudinary.uploader.destroy(fullPublicId);
         }
 
         await Homework.findByIdAndDelete(req.params.id);
+        res.json({ message: "Deleted successfully" });
 
-        res.json({ message: "Deleted from both Database and Cloudinary! 🔥" });
     } catch (error) {
-        console.error("Delete Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
