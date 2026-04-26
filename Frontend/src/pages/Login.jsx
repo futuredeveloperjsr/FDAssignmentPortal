@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowLeft, ShieldCheck } from 'lucide-react';
+import API from '../api/axios';
 
 function Login() {
     const [password, setPassword] = useState('');
@@ -10,7 +10,7 @@ function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post('https://fdassignmentportal.onrender.com/api/admin/login', { password });
+            const res = await API.post('/admin/login', { password });
             if (res.data.token) {
                 localStorage.setItem('adminToken', res.data.token);
                 window.location.href = '/admin';

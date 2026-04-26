@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { Download, ArrowLeft, Eye, X } from 'lucide-react';
+import API from '../api/axios';
 
 function ClassDetails() {
   const { className, subjectName } = useParams();
@@ -12,8 +12,7 @@ function ClassDetails() {
   useEffect(() => {
     const fetchHomework = async () => {
       try {
-        // UPDATED: Naya Subject-wise route use kiya
-        const res = await axios.get(`https://fdassignmentportal.onrender.com/api/homework/${className}/${subjectName}`);
+        const res = await API.get(`/homework/${className}/${subjectName}`);
         setHomeworks(res.data);
       } catch (err) {
         console.error("Error fetching data", err);
@@ -53,7 +52,6 @@ function ClassDetails() {
         </div>
       )}
 
-      {/* PREVIEW MODAL */}
       {selectedPdf && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-5xl h-[90vh] rounded-2xl overflow-hidden relative flex flex-col">
@@ -70,4 +68,5 @@ function ClassDetails() {
     </div>
   );
 }
+
 export default ClassDetails;

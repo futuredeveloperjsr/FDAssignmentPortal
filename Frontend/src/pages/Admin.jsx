@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Upload, CheckCircle, Loader2, ArrowLeft, Trash2, FileText } from 'lucide-react';
+import API from '../api/axios';
 
 function Admin() {
     const [file, setFile] = useState(null);
@@ -19,7 +19,7 @@ function Admin() {
     // Saare Assignments load karne ka function
     const fetchAll = async () => {
         try {
-            const res = await axios.get('https://fdassignmentportal.onrender.com/api/homework-all');
+            const res = await API.get('/homework-all');
             setAllHomework(res.data);
         } catch (err) {
             console.error("Fetch error:", err);
@@ -32,6 +32,8 @@ function Admin() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!file) return alert("Please select a file first!");
+
         setLoading(true);
         setMessage('');
 
@@ -43,11 +45,11 @@ function Admin() {
         data.append('subject', formData.subject);
 
         try {
-            await axios.post('https://fdassignmentportal.onrender.com/api/homework/upload', data);
+            await API.post('/homework/upload', data);
             setMessage("Homework uploaded successfully! 🎉");
             setFormData({ title: '', description: '', targetClass: 'Class 10', subject: 'Math' });
             setFile(null);
-            fetchAll(); // List refresh karo
+            fetchAll();
         } catch (err) {
             setMessage("Upload failed. Check console.");
             console.error(err);
@@ -59,34 +61,36 @@ function Admin() {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this?")) return;
         try {
-            await axios.delete(`https://fdassignmentportal.onrender.com/api/homework/${id}`);
+            await API.delete(`/homework/${id}`);
             setAllHomework(allHomework.filter(hw => hw._id !== id));
             alert("Deleted successfully!");
         } catch (err) {
+            console.error(err);
             alert("Delete failed.");
         }
     };
 
     return (
         <div className="p-8 max-w-6xl mx-auto">
-            <button
-                onClick={() => { localStorage.removeItem('adminToken'); window.location.href = '/'; }}
-                className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all"
-            >
-                Logout
-            </button>
-            {/* Back Button */}
-            <button
-                onClick={() => navigate('/')}
-                className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors mb-8 font-medium group"
-            >
-                <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-                Back to Student Portal
-            </button>
+            <div className="flex justify-between items-center mb-8">
+                <button
+                    onClick={() => navigate('/')}
+                    className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors font-medium group"
+                >
+                    <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    Back to Student Portal
+                </button>
+
+                <button
+                    onClick={() => { localStorage.removeItem('adminToken'); window.location.href = '/'; }}
+                    className="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all"
+                >
+                    Logout
+                </button>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-
-                {/* LEFT SIDE: UPLOAD FORM (3 columns wide) */}
+                {/* LEFT SIDE: UPLOAD FORM */}
                 <div className="lg:col-span-3">
                     <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
                         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-gray-800">
@@ -125,7 +129,7 @@ function Admin() {
                             {/* CUSTOM FILE UPLOAD DESIGN */}
                             <div className="relative border-2 border-dashed border-blue-200 rounded-2xl p-10 hover:border-blue-400 hover:bg-blue-50/50 transition-all group text-center bg-gray-50/30">
                                 <input
-                                    type="file" accept=".pdf,.jpg,.png" required
+                                    type="file" accept=".pdf,.jpg,.png" required={!loading}
                                     onChange={(e) => setFile(e.target.files[0])}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
@@ -159,11 +163,11 @@ function Admin() {
                     </div>
                 </div>
 
-                {/* RIGHT SIDE: MANAGE SECTION (2 columns wide) */}
+                {/* RIGHT SIDE: MANAGE SECTION */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 h-full">
+                    <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 h-full max-h-[700px] flex flex-col">
                         <h2 className="text-xl font-bold mb-6 text-gray-800">Manage Uploads</h2>
-                        <div className="space-y-4 max-h-162.5 overflow-y-auto pr-2 custom-scrollbar">
+                        <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
                             {allHomework.length === 0 ? (
                                 <p className="text-gray-400 text-center py-10">No assignments yet.</p>
                             ) : (
@@ -185,7 +189,6 @@ function Admin() {
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
