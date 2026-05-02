@@ -5,6 +5,8 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import Homework from './models/Homework.js';
 import upload from './config/cloudinary.js';
+import User from './models/User.js';
+import bcrypt from 'bcryptjs';
 
 dotenv.config();
 
@@ -29,6 +31,61 @@ app.post('/api/admin/login', (req, res) => {
     }
     
     res.status(401).json({ success: false });
+});
+
+// Add Student Form Route
+app.post('/api/admin/add-student', async(req, res) => {
+    try {
+        const { name, email, studentClass, password } = req.body;
+
+        // checking if email already exists
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email pahle se registered hai!" });
+        }
+
+        // hashing the password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // creating new user
+        const newStudent = new User({
+            name,
+            email,
+            password: hashedPassword,
+            role: 'student', // Role always student
+            studentClass
+        });
+
+        // Saving the user to the database
+        await newStudent.save();
+        res.status(201).json({ message: "Student added successfully!" });
+
+    } catch (error) {
+        console.error("Add Student Error:", error);
+        res.status(500).json({ error: "Error in Server." });
+    }
+});
+
+app.get('/api/admin/students', async (req, res) => {
+    try {
+        // Sirf un users ko dhundho jinka role 'student' hai
+        // .select('-password') ka matlab hai ki list mein password fetch mat karo (Security!)
+        const students = await User.find({ role: 'student' }).select('-password').sort({ createdAt: -1 });
+        res.json(students);
+    } catch (error) {
+        console.error("Fetch Students Error:", error);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+app.delete('/api/admin/students/:id', async (req, res) => {
+    try {
+        await User.findByIdAndDelete(req.params.id);
+        res.json({ message: "Student deleted successfully!" });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to delete student." });
+    }
 });
 
 app.get('/api/homework/:className/:subjectName', async (req, res) => {
@@ -84,6 +141,46 @@ app.delete('/api/homework/:id', async (req, res) => {
         await Homework.findByIdAndDelete(req.params.id);
         res.json({ message: "Deleted successfully" });
 
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/student/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const student = await User.findOne({ email, role: 'student' });
+        if (!student) {
+            return res.status(400).json({ message: "INVALID Email." });
+        }
+
+        const isMatch = await bcrypt.compare(password, student.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: "Wrong Password!" });
+        }
+
+        const token = jwt.sign(
+            { id: student._id, role: student.role, studentClass: student.studentClass },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '7d' }
+        );
+
+        res.json({ 
+            success: true, 
+            token, 
+            student: { name: student.name, studentClass: student.studentClass } 
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+app.get('/api/student/homework/:studentClass', async (req, res) => {
+    try {
+        const { studentClass } = req.params;
+        const data = await Homework.find({ targetClass: studentClass }).sort({ createdAt: -1 });
+        res.json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
