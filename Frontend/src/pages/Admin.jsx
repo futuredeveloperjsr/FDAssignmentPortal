@@ -3,9 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, CheckCircle, Loader2, ArrowLeft, Trash2, FileText, UserPlus, BookOpen, Users, User } from 'lucide-react';
 import API from '../api/axios';
 
+
 function Admin() {
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('homework');
+
+    // Reset states
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [newPassword, setNewPassword] = useState('');
 
     // Homework States
     const [file, setFile] = useState(null);
@@ -23,6 +29,22 @@ function Admin() {
     });
     const [studentLoading, setStudentLoading] = useState(false);
     const [studentMessage, setStudentMessage] = useState({ type: '', text: '' });
+
+    const handleResetPassword = async (e) => {
+        e.preventDefault();
+        try {
+            const res = await API.put(`/admin/students/reset-password/${selectedStudent._id}`, {
+                newPassword
+            });
+
+            alert(res.data.message);
+            setShowResetModal(false);
+            setNewPassword('');
+        } catch (error) {
+            console.error(error);
+            alert("Password reset nahi ho paya!");
+        }
+    };
 
     // Fetch Data Functions
     const fetchAllHomework = async () => {
@@ -52,7 +74,7 @@ function Admin() {
     const handleHomeworkSubmit = async (e) => {
         e.preventDefault();
         if (!file) return alert("Please select a file first!");
-        
+
         setLoading(true);
         setMessage('');
 
@@ -98,9 +120,9 @@ function Admin() {
             setStudentData({ name: '', email: '', password: '', studentClass: 'Class 10' });
             fetchAllStudents(); // Naya student add hote hi list update karo
         } catch (err) {
-            setStudentMessage({ 
-                type: 'error', 
-                text: err.response?.data?.message || "Failed to add student." 
+            setStudentMessage({
+                type: 'error',
+                text: err.response?.data?.message || "Failed to add student."
             });
         } finally {
             setStudentLoading(false);
@@ -130,13 +152,13 @@ function Admin() {
             </div>
 
             <div className="flex gap-4 mb-8 border-b pb-4">
-                <button 
+                <button
                     onClick={() => setActiveTab('homework')}
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'homework' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
                 >
                     <BookOpen size={20} /> Manage Homework
                 </button>
-                <button 
+                <button
                     onClick={() => setActiveTab('students')}
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${activeTab === 'students' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white text-gray-500 hover:bg-gray-50'}`}
                 >
@@ -237,7 +259,7 @@ function Admin() {
                             </form>
                             {studentMessage.text && (
                                 <div className={`mt-6 p-4 rounded-xl border flex items-center gap-2 animate-bounce ${studentMessage.type === 'success' ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
-                                    {studentMessage.type === 'success' ? <CheckCircle size={20} /> : <div className="font-bold">!</div>} 
+                                    {studentMessage.type === 'success' ? <CheckCircle size={20} /> : <div className="font-bold">!</div>}
                                     {studentMessage.text}
                                 </div>
                             )}
@@ -248,10 +270,10 @@ function Admin() {
                     <div className="lg:col-span-2">
                         <div className="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 h-full max-h-[700px] flex flex-col">
                             <h2 className="text-xl font-bold mb-2 text-gray-800 flex items-center gap-2">
-                                <Users className="text-indigo-600" size={24}/> Registered Students
+                                <Users className="text-indigo-600" size={24} /> Registered Students
                             </h2>
                             <p className="text-sm text-gray-500 mb-6 font-medium">Total count: <span className="text-indigo-600 font-bold">{allStudents.length}</span></p>
-                            
+
                             <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar flex-1">
                                 {allStudents.length === 0 ? (
                                     <p className="text-gray-400 text-center py-10">No students registered yet.</p>
@@ -270,6 +292,15 @@ function Admin() {
                                                     </span>
                                                 </div>
                                             </div>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedStudent(student);
+                                                    setShowResetModal(true);
+                                                }}
+                                                className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-2 rounded-lg text-sm font-bold ml-2 transition-all shadow-sm"
+                                            >
+                                                Reset Password
+                                            </button>
                                             <button onClick={() => handleStudentDelete(student._id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0">
                                                 <Trash2 size={18} />
                                             </button>
@@ -278,6 +309,42 @@ function Admin() {
                                 )}
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+            {/* 🔑 RESET PASSWORD MODAL */}
+            {showResetModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md">
+                        <h2 className="text-xl font-bold text-gray-800 mb-2">Reset Password</h2>
+                        <p className="text-sm text-gray-500 mb-6">Naya password set karein for: <span className="font-bold text-indigo-600">{selectedStudent?.name}</span></p>
+
+                        <form onSubmit={handleResetPassword}>
+                            <input
+                                type="text"
+                                placeholder="Enter New Password (e.g. 123456)"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                required
+                                className="w-full p-3 border border-gray-300 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                            />
+
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowResetModal(false)}
+                                    className="px-4 py-2 text-gray-600 font-bold hover:bg-gray-100 rounded-lg transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-lg transition-all shadow-md"
+                                >
+                                    Save Password
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             )}
