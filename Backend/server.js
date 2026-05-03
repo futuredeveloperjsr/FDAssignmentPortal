@@ -7,6 +7,7 @@ import Homework from './models/Homework.js';
 import upload from './config/cloudinary.js';
 import User from './models/User.js';
 import bcrypt from 'bcryptjs';
+import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
 
@@ -69,8 +70,6 @@ app.post('/api/admin/add-student', async(req, res) => {
 
 app.get('/api/admin/students', async (req, res) => {
     try {
-        // Sirf un users ko dhundho jinka role 'student' hai
-        // .select('-password') ka matlab hai ki list mein password fetch mat karo (Security!)
         const students = await User.find({ role: 'student' }).select('-password').sort({ createdAt: -1 });
         res.json(students);
     } catch (error) {
