@@ -17,7 +17,7 @@ function About() {
                 {/* Content Section */}
                 <div className="p-10 text-gray-600 leading-relaxed space-y-8 text-lg">
                     <p>
-                        <strong className="text-gray-800">Future Developer</strong> in Rahargora, Jamshedpur is a renowned educational institution that has been offering high-quality coaching services. Specializing in academics from Classes 1 to 12 and competitive exam preparations, the institute has become a trusted destination for students looking to achieve academic success.
+                        <strong className="text-gray-800">Future Developer</strong> in Rahargora, Jamshedpur is a renowned educational institution that has been offering high-quality coaching services. Specializing in academics from Classes 6 to 12 and competitive exam preparations, the institute has become a trusted destination for students looking to achieve academic success.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">

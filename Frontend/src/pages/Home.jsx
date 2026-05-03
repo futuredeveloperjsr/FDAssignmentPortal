@@ -50,7 +50,7 @@ function Home() {
                     </h1>
 
                     <p className="text-xl md:text-2xl text-indigo-100 mb-4 font-bold max-w-3xl mx-auto">
-                        Classes from 1 to 12 With Best Technology
+                        Classes from 6 to 12 With Best Technology
                     </p>
                     <p className="text-lg text-gray-300 mb-10 font-medium max-w-2xl mx-auto leading-relaxed">
                         A renowned educational institution in Jamshedpur offering high-quality academic and competitive exam preparations with supportive learning environments.
