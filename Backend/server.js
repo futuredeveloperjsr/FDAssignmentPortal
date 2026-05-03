@@ -86,6 +86,25 @@ app.delete('/api/admin/students/:id', async (req, res) => {
         res.status(500).json({ error: "Failed to delete student." });
     }
 });
+app.put('/api/admin/students/reset-password/:id', async (req, res) => {
+    try {
+        const { newPassword } = req.body;
+        
+        if (!newPassword) {
+            return res.status(400).json({ message: "Enter new password" });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        await User.findByIdAndUpdate(req.params.id, { password: hashedPassword });
+        
+        res.json({ message: "Password successfully update ho gaya!" });
+    } catch (error) {
+        console.error("Reset Password Error:", error);
+        res.status(500).json({ error: "Server error." });
+    }
+});
 
 app.get('/api/homework/:className/:subjectName', async (req, res) => {
     try {
